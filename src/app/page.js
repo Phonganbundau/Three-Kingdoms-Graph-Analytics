@@ -1,103 +1,142 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect } from 'react';
+import { Toaster } from 'react-hot-toast';
+import Navbar from '../components/Layout/Navbar';
+import DashboardTab from '../components/Tabs/DashboardTab';
+import NetworkTab from '../components/Tabs/NetworkTab';
+import CharactersTab from '../components/Tabs/CharactersTab';
+import AnalyticsTab from '../components/Tabs/AnalyticsTab';
+import { healthAPI } from '../lib/api';
 
-export default function Home() {
+export default function HomePage() {
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [apiConnected, setApiConnected] = useState(false);
+
+  useEffect(() => {
+    checkAPIConnection();
+  }, []);
+
+  const checkAPIConnection = async () => {
+    try {
+      await healthAPI.check();
+      setApiConnected(true);
+    } catch (error) {
+      console.warn('API not available:', error);
+      setApiConnected(false);
+    }
+  };
+
+  const renderActiveTab = () => {
+    switch (activeTab) {
+      case 'dashboard':
+        return <DashboardTab />;
+      case 'network':
+        return <NetworkTab />;
+      case 'characters':
+        return <CharactersTab />;
+      case 'analytics':
+        return <AnalyticsTab />;
+      case 'settings':
+        return (
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Cài đặt</h1>
+              <p className="mt-1 text-sm text-gray-500">
+                Cấu hình hệ thống và API
+              </p>
+            </div>
+            <div className="bg-white shadow rounded-lg p-6">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900">
+                      Kết nối API
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Trạng thái kết nối với FastAPI backend
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className={`h-3 w-3 rounded-full ${apiConnected ? 'bg-green-400' : 'bg-red-400'}`}></div>
+                    <span className="text-sm text-gray-700">
+                      {apiConnected ? 'Đã kết nối' : 'Không kết nối'}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={checkAPIConnection}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+                >
+                  Kiểm tra kết nối
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      default:
+        return <DashboardTab />;
+    }
+  };
+
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className="min-h-screen bg-gray-50">
+      {/* Navigation */}
+      <Navbar 
+        activeTab={activeTab} 
+        onTabChange={setActiveTab}
+      />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <div className="px-4 py-6 sm:px-0">
+          {renderActiveTab()}
         </div>
       </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+
+      {/* Toast Notifications */}
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: '#363636',
+            color: '#fff',
+          },
+          success: {
+            duration: 3000,
+            style: {
+              background: '#10B981',
+            },
+          },
+          error: {
+            duration: 5000,
+            style: {
+              background: '#EF4444',
+            },
+          },
+        }}
+      />
+
+      {/* API Connection Warning */}
+      {!apiConnected && (
+        <div className="fixed bottom-4 right-4 bg-yellow-50 border border-yellow-200 rounded-md p-4 max-w-sm">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-yellow-800">
+                API không khả dụng
+              </h3>
+              <p className="text-sm text-yellow-700 mt-1">
+                Đảm bảo FastAPI server đang chạy trên localhost:8000
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

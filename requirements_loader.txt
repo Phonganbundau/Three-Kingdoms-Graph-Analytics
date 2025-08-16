@@ -1,0 +1,2 @@
+# Requirements for Tam Quoc Data Loader
+neo4j==5.15.0
